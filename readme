@@ -1,0 +1,65 @@
+steps to create certificate for server side
+I am creating a Keystore where private key will be stored for a server
+and a certificate will be exported using private key. A keystore can have multiple private keys and from each private key
+we can export a certificate
+
+1. create a private key and keystore together. This keystore will store this private with following command :
+    ---> keytool -genkey -keyalg RSA -alias raviServerKey -keystore raviServerkeystore.jks
+    Above command will ask multiple entries :
+    1.Enter keystore password - raviserverpwd
+    2. first and last name
+    3 so on
+    I entered below info
+    CN=ravi khandelwal, OU=it, O=knowledgecrony, L=dhanbad, ST=jharkhand, C=IN correct?
+    4. enter key password for <raviServerKey> (earlier I had entered a keystore password, now I will enter
+    private key password. We can have same or different password. I am entering) - raviprivatekey2pwd
+
+    at the end we get this useful warning message:
+    The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format
+     using "keytool -importkeystore -srckeystore raviServerkeystore.jks
+     -destkeystore raviServerkeystore.jks -deststoretype pkcs12".
+
+2. once keystore with key name raviServerkeystore.jks is generated, i kept them under the follwing path:
+C:\Users\ravi123\IdeaProjects\springbootcertificatedemo\certificates\raviServerkeystore.jks
+
+3. Add the following entry in application.properties file
+    server.port=8443
+    server.ssl.key-store-type=JKS
+    server.ssl.key-store=C:\\Users\\ravi123\\IdeaProjects\\springbootcertificatedemo\\certificates\\raviServerkeystore.jks
+    server.ssl.key-store-password=raviserverpwd
+    server.ssl.key-alias=raviServerKey
+    server.ssl.key-password=raviprivatekey2pwd
+
+4. start the server and access the end point with https://localhost:8443/
+
+5. browser will give a warning that the certificate is not signed by certification authority and self signed.
+   browser manages list of Trusted Root Certification authorities and validate certificate against them. If it does
+   not find the certificate, it gives warning .
+
+6. Now will create a Rest client to access the end point
+   1. export a certificate exportedServerCertForClient.cer using server's private key and server's keystore
+   This will ask for Keystore password - raviserverpwd
+   --> keytool -export -alias raviServerKey -file exportedServerCertForClient.cer -keystore raviServerkeystore.jks
+
+   2. import this certificate exportedServerCertForClient.cer to a new keystore (for client we call this trust store)
+   with name client.truststore and create a public key for client with name raviClientPublicKey
+   --> keytool -import -alias raviClientKey -file exportedServerCertForClient.cer -storetype JKS -keystore client.truststore
+     create a new passowrd for truststore - raviclientpwd
+
+
+7. Client just need the path of trust store (certificatte is alreay imported to this trust store) and password of this trust store
+   to make the ssl connection. Public key of this trust store is raviClientKey, which is used for encrypt the message sent to server
+   by client
+
+
+ Q. Can we create a empty truststore or keystore and later import a certificate in truststore or add a private key in
+ keystore ?
+ A. No, it's not possible with commands. JVM is not happy with empty keystore/trustore. One workaround is to create a truststore
+ with a certificate and later delete that certificate.
+
+
+
+
+
+
+
