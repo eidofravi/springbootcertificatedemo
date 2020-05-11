@@ -46,6 +46,13 @@ C:\Users\ravi123\IdeaProjects\springbootcertificatedemo\certificates\raviServerk
    --> keytool -import -alias raviClientKey -file exportedServerCertForClient.cer -storetype JKS -keystore client.truststore
      create a new passowrd for truststore - raviclientpwd
 
+    --> once a truststore is created, we don't need to create any new truststore, we can rather import new certificates in this
+     existing truststore
+     keytool -import -trustcacerts -file [certificate] -alias [alias] -keystore client.truststore
+
+    --> list the certificates in the trustore
+    keytool -list -keystore client.truststore
+
 
 7. Client just need the path of trust store (certificatte is alreay imported to this trust store) and password of this trust store
    to make the ssl connection. Public key of this trust store is raviClientKey, which is used for encrypt the message sent to server
